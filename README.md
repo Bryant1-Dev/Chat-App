@@ -33,14 +33,14 @@ npm install
 
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+* [React](https://reactjs.org/docs/getting-started.html) - The frontend framework used
+* [PostgreSQL](https://www.postgresql.org/docs/12/index.html) - The ORDMS (Object Relational Database Management System)
+* [Sequelize](https://sequelize.org/v5/) - The ORM (Object Relational Mapping)
 
 
 ## Authors
 
-* **Bryant Wilkins** - *Initial work* - [Bryant1-Dev](https://github.com/Bryant1-Dev)
+* **Bryant Wilkins** - [Bryant1-Dev](https://github.com/Bryant1-Dev)
 
 ## License
 
