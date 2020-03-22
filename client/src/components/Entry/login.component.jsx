@@ -1,4 +1,5 @@
 import React, {useState, useContext} from 'react';
+import { withRouter } from "react-router-dom";
 import axios from 'axios';
 
 import {UserContext} from '../../stores/UserStore';
@@ -22,13 +23,18 @@ const Login = (props) => {
 
         const data = {email, password}
 
-        axios.post('/login', data).then(response => {
+        axios.post('/users/login', data).then(response => {
             if(response.data.success) {
-                userDispatch({type: 'login', payload: response.data.result});
-                //redirect to the dashboard
+                console.log(JSON.stringify(response.data.payload))
+                userDispatch({type: 'login', payload: response.data.payload.user});
+                setEmail('');
+                setPassword('');
+                props.history.push('/chat');
+                //redirect to the chat dashboard
             }
              else {
                  console.error(response.error);
+                 setPassword('');
              }
         })
     }
@@ -38,9 +44,9 @@ const Login = (props) => {
         <div className="entry-sub-container entry-login" style={toggleDisplay}>
             <h1>Login</h1>
             <form className="entry-form" onSubmit={handleLogin}>
-                <TextField label="Email" onChange={e => setEmail(e.target.value)} />
-                <TextField label="Password" onChange={e => setPassword(e.target.value)} />
-                <Button variant="outlined" color="primary">
+                <TextField label="Email" type="email" onChange={e => setEmail(e.target.value)} />
+                <TextField label="Password" type="password" onChange={e => setPassword(e.target.value)} />
+                <Button type="submit" variant="outlined" color="primary">
                     Login
                 </Button>
             </form>
@@ -48,4 +54,4 @@ const Login = (props) => {
     )
 }
 
-export default Login;
+export default withRouter(Login);

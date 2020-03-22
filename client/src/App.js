@@ -10,6 +10,7 @@ import FriendsList from './pages/FriendsList';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
 import Chat from './pages/Chat';
+import AuthenticatedComponent from './components/AuthenticatedComponent';
 
 function App() {
   return (
@@ -19,13 +20,15 @@ function App() {
           <NavBar />
           <Switch>
             <Route exact path="/" component={Entry} />
-            <Route path="/user-profile" component={PersonalProfile} />
-            <Route path="/friends-list" component={FriendsList} />
-            <Route path="/notifications" component={Notifications} />
-            <Route path="/user-settings" component={Settings} />
-            <ChatStore>
-              <Route path="/chat" component={Chat} />
-            </ChatStore>
+            <AuthenticatedComponent>
+              <Route path="/user-profile" component={PersonalProfile} />
+              <Route path="/friends-list" component={FriendsList} />
+              <Route path="/notifications" component={Notifications} />
+              <Route path="/user-settings" component={Settings} />
+              <ChatStore>
+                <Route path="/chat" component={Chat} />
+              </ChatStore>
+            </AuthenticatedComponent>
           </Switch>
         </Router>
       </UserStore>

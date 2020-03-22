@@ -44,6 +44,7 @@ const styles = makeStyles({
 const PersonalProfile = (props) => {
     const classes = styles();
     const {user, userDispatch} = useContext(UserContext);
+    
     return (
         <div className="profile-outer-container">
             <div className="profile-background">
@@ -59,9 +60,9 @@ const PersonalProfile = (props) => {
                         </div>
                         <div className="profile-information">
                             {/*user.friends.length}*/}
-                            <div><p>{user ? JSON.stringify(user) : 'Username Here'}</p></div>
+                            <div><p>{user ? user.username : 'Username Here'}</p></div>
                             {/*user.friends.length}*/}
-                            <div><p>{user ? JSON.stringify(user) : 28}{' | '} Friends</p></div>
+                            <div><p>{user ? user.email : 28}{' | '} Friends</p></div>
                             
                         </div>
                     </div>

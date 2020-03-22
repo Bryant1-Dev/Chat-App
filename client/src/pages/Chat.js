@@ -102,7 +102,7 @@ const Chat = () => {
                    />
                    <Button 
                    onClick={() => {
-                       sendChatAction({from: user, msg: textValue, topic: activeTopic})
+                       sendChatAction({from: user.username, msg: textValue, topic: activeTopic})
                         setTextValue('')
                     }}
                    className={classes.button}

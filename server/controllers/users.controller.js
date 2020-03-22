@@ -9,6 +9,11 @@ function validatePassword(passowrd) {
      bcrypt.compareSync(password, this.password);
 }
 
+exports.isAuthenticated = (req, res, next) => {
+    if(!req.isAuthenticated()) return res.send({message: 'This user is not logged in', payload: {}});
+    next();
+}
+
 exports.validateRegister = async (req, res, next) => {
     
     const errors = [];

@@ -1,7 +1,7 @@
-import React, {createContext, useReducer} from 'react'
+import React, {createContext, useReducer, useContext} from 'react'
 import io from 'socket.io-client'
 
-
+import {UserContext} from '../stores/UserStore';
 export const ChatContext = createContext();
  
 
@@ -71,7 +71,7 @@ export default function ChatStore(props) {
         })
     }
 
-    const user = 'Aurius' + Math.random(100).toFixed(2);
+    const {user, userDispatch} = useContext(UserContext);
     
     return (
         <ChatContext.Provider value={{allChats, sendChatAction, user}}>
