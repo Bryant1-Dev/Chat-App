@@ -36,45 +36,45 @@ const initState = {
     ]
 }
 function reducer(state, action) {
-    const {from, msg, topic} = action.payload;
+    const {user, text} = action.payload;
     switch(action.type) {
+        case 'LOAD_CHATS': 
+        console.log('load_chats')
+            return action.payload;
         case 'RECIEVE_MESSAGE': 
-            return {
-                ...state,
-                [topic]: [
-                    ...state[topic],
-                    {
-                        from,
-                        msg
-                    }
-                ]
-            }
+        console.log('recieve_message')
+            const newMessages = [...state[user.chatId].messages, {from: user.username, message: text}];
+            const clonedState = {...state} 
+            clonedState[user.chatId].messages = newMessages;
+            console.log("applied state changes: " + JSON.stringify(state))
+            return clonedState;
+        
         default: 
+        console.log('default')
             return state;
     }
 }
 
 let socket;
 
-function sendChatAction(value) {
-    socket.emit('chat message', value);
-}
+
+
 
 
 export default function ChatStore(props) {
-    const [allChats, dispatch] = useReducer(reducer, initState)
+    const [allChats, dispatch] = useReducer(reducer, null)
 
     if(!socket) {
         socket = io(':8080')
-        socket.on('chat message', data => {
+        /*socket.on('sendMessage', data => {
             dispatch({type: 'RECIEVE_MESSAGE', payload : data})
-        })
+        })*/
     }
 
     const {user, userDispatch} = useContext(UserContext);
     
     return (
-        <ChatContext.Provider value={{allChats, sendChatAction, user}}>
+        <ChatContext.Provider value={{allChats, user, chatDispatch: dispatch, socket}}>
             {props.children}
         </ChatContext.Provider>
     )

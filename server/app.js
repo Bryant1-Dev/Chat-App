@@ -16,12 +16,13 @@ const io = socketio(server);
 
 
 const users = require('./routes/users');
+const chats = require('./routes/chats');
 
 const PORT = process.env.PORT || 8080;
 const PRODCUCTION = process.env.PRODCUCTION || 'development';
 const SECRET = process.env.SECRET || 'secret';
 
-const {addUser, removeUser, getUser, getUsersInRoom} = require('./controllers/chat.controller');
+const {addUser, removeUser, getUser, getUsersInRoom, retrieveUserChats, getUserInRoom} = require('./controllers/chat.controller');
 
 require("./config/passport")(passport);
 
@@ -53,7 +54,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 //Socket logic
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
     console.log("We have a new connection!!!")
 
     socket.on('chat message', (data) => {
@@ -61,44 +62,62 @@ io.on('connection', (socket) => {
         io.emit('chat message', data)
     })
 
-    socket.on('join', (data, callback) => {
-        //console.log(data.name, data.room);
-        const {error, user} = addUser({ id: socket.id, name: data.name, room: data.room} )
+    socket.on('join', async (data, callback) => {
         
-        if(error) return callback(error);
+        let {error, chatRoom} = await getChatRoom(data.chatId);
 
-        console.log(user.name, user.room);
+        if(!chatRoom || error) {
+            if(error) return callback(error); //database error
+            return callback({error: `There is no chat room by id: ${data.chatId}`});
+        }
 
-        socket.emit('message', {user: 'admin', text: `${user.name} welcome to the room ${user.room}!`})
-        socket.broadcast.to(user.room).emit('message', {user: 'admin', text: `${user.name} has joined!`})
+        const result = await addUser({ chatId: data.chatId, userId: data.userId, userPermission: 'user'})
+        
+        if(result.error) return callback(result.error);
+        const {user} = result;
 
-        socket.join(user.room)
+        console.log(user.name, user.chatName);
 
-        io.to(user.room).emit('roomData', {room: user.room, users: getUsersInRoom(user.room)})
+        socket.emit('message', {user: {username: 'admin-bot'}, text: `${user.name} welcome to the room ${user.chatName}!`})
+        socket.broadcast.to(user.chatId).emit('message', {user: 'admin', text: `${user.name} has joined!`})
+
+        socket.join(user.chatId);
+
+        io.to(user.chatId).emit('roomData', {room: {chatId: user.chatId, name: user.chatName}, users: await getUsersInRoom(user.chatId)});
 
         callback(); //No errors
     })
     
-    socket.on('sendMessage', (message, callback) => {
-        const user = getUser(socket.id);
-        if(!user) {
-            return callback({user: 'admin', text: 'No user found'})
+    socket.on('switchRoom', async (data, callback) => {
+        const {userId, chatId} = data;
+        socket.join(chatId);
+        //Can resend this specific roomData if need be
+        callback();
+    })
+
+    socket.on('sendMessage', async (data, callback) => {
+        const {userId, chatId, message} = data;
+        const {user, error} = await getUserInRoom(userId, chatId);
+        
+        if(!user || error) {
+            if(error) return callback(error); //database error
+            return callback({user: {username: 'admin-bot'}, text: 'No user found'})
         }
 
         console.log('Retreived user: ' + JSON.stringify(user))
         console.log(`sendMessage event: ${message}`)
-        io.to(user.room).emit('message', { user: user.name, text: message})
+        io.to(user.chatId).emit('message', { user: user, text: message})
         //May need to add emit for roomData here?
-        callback();
+        callback(); //No errors
     })
 
     socket.on('disconnect', () => {
-        const user = removeUser(socket.id);
+        //const user = removeUser(socket.id);
 
-        if(user) {
+        /*if(user) {
             io.to(user.room).emit('message', {user: 'admin', text: `${user.name} has left`})
-            io.to(user.room).emit('roomData', {room: user.room, users: getUsersInRoom(user.room)})
-        }
+            io.to(user.room).emit('roomData', {room: user.room, users: await getUsersInRoom(user.room)})
+        }*/
         console.log("A user has left (disconnected)")
     })
 })
@@ -106,5 +125,6 @@ io.on('connection', (socket) => {
 
 app.use('', require('./routes/index'));
 app.use('/users', users);
+app.use('/chats', chats);
 
 server.listen(PORT, () => console.log(`Server listening on port ${PORT}...`))

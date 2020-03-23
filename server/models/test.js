@@ -94,7 +94,7 @@ const ChatParticipant = db.define('chatParticipants', {
         type: Sequelize.DataTypes.BOOLEAN,
         defaultValue: false
     },
-    receiveNotifications: {
+    wantsNotifications: {
         type: Sequelize.DataTypes.BOOLEAN,
         defaultValue: true
     },
@@ -107,8 +107,8 @@ const ChatParticipant = db.define('chatParticipants', {
 });
 
 //Users that are in the chat
-User.belongsToMany(Chat, { as: { singular: 'chat', plural: 'chats' }, through: 'ChatParticipants', foreignKey: 'userId' })
-Chat.belongsToMany(User, { as: { singular: 'participant', plural: 'participants' }, through: 'ChatParticipants', foreignKey: 'chatId' })
+User.belongsToMany(Chat, { as: { singular: 'chat', plural: 'chats' }, through: 'chatParticipants', foreignKey: 'userId' })
+Chat.belongsToMany(User, { as: { singular: 'participant', plural: 'participants' }, through: 'chatParticipants', foreignKey: 'chatId' })
 
 //People a user has muted
 User.belongsToMany(User, { as: { singular: 'mutedMember', plural: 'mutedMembers' }, through: 'PersonalMutedUsers' })
