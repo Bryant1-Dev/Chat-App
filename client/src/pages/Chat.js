@@ -2,6 +2,9 @@ import React, {useState, useContext, useEffect} from 'react'
 import { makeStyles, Paper, Typography, List, 
     ListItem, ListItemText, Chip, Button, TextField } from '@material-ui/core';
 
+import ChatOptions from '../components/Chat/ChatOptions';
+
+import {sendSocketData} from '../utils/socket';
 import {ChatContext} from '../stores/ChatStore';
 import {UserContext} from '../stores/UserStore';
 
@@ -60,21 +63,50 @@ const Chat = () => {
     const [textValue, setTextValue] = useState("");
     const [activeTopic, setActiveTopic] = useState("")
     const [messages, setMessages] = useState([])
-
+    const [sending, setSending] = useState(false);
+    //const [latestMessageTime, setlatestMessageTime] = useState(null);
+    let latestMessageTime = null;
+    useEffect(() => {
+        //console.log('running')
+        const socketData = sendSocketData();
+        //console.log(socketData);
+        if (socketData) {
+            console.log('reached hook: ' + JSON.stringify(socketData))
+            if(socketData && socketData.currentTime != latestMessageTime) {
+                console.log('dispatching socket data...')
+                latestMessageTime = socketData.currentTime;
+                chatDispatch({type: 'RECIEVE_MESSAGE', payload : socketData})
+            }
+        }
+        
+    })
     useEffect(() => {
         
-            socket.on('message', (data) => {
-                console.log("runs")
-                console.log('socket on message: ' + JSON.stringify(data));
-                chatDispatch({type: 'RECIEVE_MESSAGE', payload : data})
-                setMessages([...messages, data])
-                //setMessages([...messages, message])
-            })
-        
+            
+        /*socket.on('message', (data) => {
+            //console.log("runs")
+            console.log('socket on message: ' + JSON.stringify(data));
+            chatDispatch({type: 'RECIEVE_MESSAGE', payload : data})
+            setMessages([...messages, data])
+            
+        })*/
         
     }, [messages])
 
-    
+    useEffect(() => {
+        if(textValue.length > 0 && sending) {
+            console.log('sending hook executes')
+            sendChatAction({userId: user.id, message: textValue, chatId: activeTopic}, socket)
+            setSending(false);
+        }
+    }, [sending])
+
+    const handleSwitchChat = (event, chatId) => {
+        event.preventDefault();
+        switchChatRoom({chatId: chatId, userId: user.id}, socket)
+        setActiveTopic(chatId);
+        setMessages(allChats[chatId].messages);
+    }
 
     //On component load get all chats this user is in
     useEffect(() => {
@@ -107,10 +139,8 @@ const Chat = () => {
 
     function sendChatAction(data, socket) {
         if(data && textValue) {
-            socket.emit('sendMessage', data, () => {console.log('Sent message!'); setTextValue('');});
-            
+            socket.emit('sendMessage', data, () => {console.log('Sent message!'); setTextValue('');});   
         }
-        
     }
 
     function joinChatRoom(data, socket) {
@@ -126,8 +156,7 @@ const Chat = () => {
                     console.log(`Joined ${data.chatId}`)
                 });
             }
-        }
-        
+        } 
     }
 
     return (
@@ -135,19 +164,14 @@ const Chat = () => {
         {(allChats && activeTopic) ? (
             <div className={classes.container}>
                 <Paper className={classes.root}>
-                    <Typography variant="h4" component="h4">
-                        Chat Application    
-                    </Typography>  
-                    <Typography variant="h5" component="h5">
-                        {allChats[activeTopic].name}
-                    </Typography>
+                    <ChatOptions topicName={allChats[activeTopic].name} />
                     <div className={classes.flex}>
                         <div className={classes.topicsWindow}>
                             <List>
                                 {
                                     topics.map(topic => {
                                         return (
-                                            <ListItem onClick={e => setActiveTopic(e.target.innerText)} key={topic} button>
+                                            <ListItem onClick={e => handleSwitchChat(e, topic)} key={topic} button>
                                                 <ListItemText primary={allChats[topic].name} />
                                             </ListItem>
                                         )
@@ -157,12 +181,12 @@ const Chat = () => {
                         </div>
                         <div className={classes.chatWindow}>
                         {
-                                    messages.map((messageContent, index) => {
+                                    allChats[activeTopic].messages.map((messageContent, index) => {
                                         return (
                                             <div className={classes.flex} key={index}> 
-                                                <Chip label={messageContent.user.username} className={classes.chip} />
+                                                <Chip label={messageContent.from} className={classes.chip} />
                                                 <Typography component="p">
-                                                    {messageContent.text}
+                                                    {messageContent.message}
                                                 </Typography>
                                             </div>
                                         )
@@ -179,7 +203,7 @@ const Chat = () => {
                     />
                     <Button 
                             onClick={() => {
-                                sendChatAction({userId: user.id, message: textValue, chatId: activeTopic}, socket)
+                                setSending(true)
                             }}
                             className={classes.button}
                             variant="contained" 

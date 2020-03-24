@@ -9,6 +9,7 @@ const pgSession = require('connect-pg-simple')(session);
 const passport = require("passport");
 
 const bodyParser = require('body-parser');
+const fileUpload = require('express-fileupload');
 
 const app = express();
 const server = http.createServer(app);
@@ -29,7 +30,9 @@ require("./config/passport")(passport);
 app.set("trust proxy", true);
 
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json()); 
+app.use(bodyParser.json());
+
+app.use(fileUpload());
 
 app.use(
   session({

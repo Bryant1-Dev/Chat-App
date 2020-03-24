@@ -1,5 +1,5 @@
-import React, {createContext, useReducer, useContext} from 'react'
-import io from 'socket.io-client'
+import React, {createContext, useReducer, useContext, useEffect, useState} from 'react'
+import {socket, sendSocketData} from '../utils/socket';
 
 import {UserContext} from '../stores/UserStore';
 export const ChatContext = createContext();
@@ -55,21 +55,15 @@ function reducer(state, action) {
     }
 }
 
-let socket;
 
 
-
-
+//chatDispatch({type: 'RECIEVE_MESSAGE', payload : data})
+    //setMessages([...messages, data])
 
 export default function ChatStore(props) {
-    const [allChats, dispatch] = useReducer(reducer, null)
+    const [allChats, dispatch] = useReducer(reducer, null);
 
-    if(!socket) {
-        socket = io(':8080')
-        /*socket.on('sendMessage', data => {
-            dispatch({type: 'RECIEVE_MESSAGE', payload : data})
-        })*/
-    }
+    
 
     const {user, userDispatch} = useContext(UserContext);
     

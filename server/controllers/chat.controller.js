@@ -198,3 +198,46 @@ exports.retrieveUserChats = async (req, res) => {
     }
 }
 
+//TODO: Add support for profileImages (after finishing up adding chats and inviting users)
+exports.createChatRoom = async (req, res) => {
+
+    const {chatName} = req.body;
+
+    console.log('req.body: ' + JSON.stringify(req.body));
+    if(!req.body) return res.send({success: false, message: 'The body is empty'})
+    try {
+        const user = await User.findOne({where: {id: req.user.id}})
+        if(!user) {
+            return res.send({
+                success: false,
+                payload: {error: `This user does not exist: ${req.user.id}`}
+            })
+        }
+
+        const newChat = await Chat.create({
+            name: chatName,
+            settings: {
+                option1: 'default settings'
+            }
+        });
+
+        const chatParticipantSettings = {
+            isMuted: false,
+            wantsNotifications: true,
+            permissions: 'owner'
+        }
+
+        await newChat.addParticipant(user, chatParticipantSettings);
+        console.log(`Newly created chat room: ${newChat}`);
+        return res.send({
+            success: true
+        })
+    }
+
+    catch(error) {
+        res.send({
+            success: false,
+            payload: {error: error, message: 'database error'}
+        })
+    }
+}
