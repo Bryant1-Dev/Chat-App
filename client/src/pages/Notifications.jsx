@@ -1,8 +1,15 @@
-import React from 'react';
+import React, {useState, useEffect, useContext} from 'react';
+import axios from 'axios';
+
 import { makeStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
+import {List, Typography} from '@material-ui/core';
 
 import Notification from '../components/Notifications/Notification';
+import {UserContext} from '../stores/UserStore';
+import {NotificationContext} from '../stores/NotificationStore';
+
+import {addChatInviteNotificationMessages} from '../utils/util';
+import {socket, sendSocketNotificationData} from '../utils/socket';
 
 import '../styles/notifications.style.css';
 
@@ -19,8 +26,9 @@ const data = [
     }
 
 ]
-
-const data2 = [...data, ...data, ...data, ...data, ...data]
+const imageUrls = ['https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTOc7TEw_FSvWMYwioGSA2axxpO1RLOEu30gsR417WhVjRnS-kF', 
+'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcS6VfmmhTs7Lkt55q2vAu_g3TFNs5-uL8qjQR4_etc_okF32XJA'];
+//const data2 = [...data, ...data, ...data, ...data, ...data]
 
 const useStyle = makeStyles(theme => ({
     root: {
@@ -45,18 +53,91 @@ const useStyle = makeStyles(theme => ({
 
 const Notifications = () => {
     const classes = useStyle();
-    return (
-        <div className="notifications-outer-container">
-            <div className="notifications-container">
-                <List className={classes.root}>
-                    {
-                        data2.map((notification, index) => {
-                            return (<Notification notification={notification} />)
-                        })
+
+    const {user} = useContext(UserContext);
+    const {allNotifications, notificationDispatch} = useContext(NotificationContext);
+    const notificationIds = allNotifications ? Object.keys(allNotifications) : [];
+
+
+    const [loading, setLoading] = useState(true);
+
+    let latestMessageTime = null;
+
+    //On initial load
+    //On component load get all notifications this user has
+    useEffect(() => {
+        if(user !== null) {
+            axios.post(`/notifications`, {userId: user.id}).then(response => {
+                if(response.data.success) {
+                    
+                    //Assign all the notifications messages
+                    const {notifications} = response.data.payload;
+                    if(notifications) {
+                        const keys = Object.keys(notifications);
+                        keys.forEach(key => {
+                            notifications[key] = addChatInviteNotificationMessages(notifications[key]);
+                        });
                     }
-                </List>
-            </div>
-        </div>
+
+                    //dispatch the payload to the notification store
+                    notificationDispatch({type: 'LOAD_NOTIFICATIONS', payload: notifications});
+                    console.log("On Notifications page load: " + JSON.stringify(notifications));
+                    
+                }
+                setLoading(false);
+            })
+        }
+        
+    }, [user]);
+
+    //Every render check if we have any new notification data from our socket
+    useEffect(() => {
+    
+        const socketData = sendSocketNotificationData();
+        
+        if (socketData) {
+            console.log('reached notification hook: ' + JSON.stringify(socketData))
+            if(socketData && socketData.currentTime != latestMessageTime) {
+                console.log('dispatching socket notification data...')
+                latestMessageTime = socketData.currentTime;
+                notificationDispatch({type: 'RECEIVE_NOTIFICATION', payload : socketData})
+            }
+        }
+        
+    })
+
+    return (
+        <>
+            {loading && (<div>Loading</div>)}
+        
+            {!loading && 
+                (<>
+                    
+                        <div className="notifications-outer-container">
+                            <div className="notifications-container">
+                                {(notificationIds > 0) ? (
+                                    <List className={classes.root}>
+                                    {
+                                        notificationIds.map((id, index) => {
+                                            //Until we properly implement BLOB data or set up a file API, we will use random images
+                                            return (<Notification imageSource={imageUrls[index % imageUrls.length]} notification={allNotifications[id]} />)
+                                        })
+                                    }
+                                </List>
+                                )
+                            :
+                            (
+                                <Typography variant="h5" component="h5">
+                                    You have no new notifications
+                                </Typography>
+                            )}
+                                
+                            </div>
+                        </div>
+                    
+                </>)
+            }
+        </>
     )
 }
 

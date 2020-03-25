@@ -3,6 +3,7 @@ import React from 'react';
 import {BrowserRouter as Router, Route, Switch} from 'react-router-dom'
 import UserStore from './stores/UserStore'
 import ChatStore from './stores/ChatStore'
+import NotificationStore from './stores/NotificationStore'
 import Entry from './pages/Entry';
 import PersonalProfile from './pages/PersonalProfile';
 import NavBar from './components/navbar.component.jsx';
@@ -23,7 +24,9 @@ function App() {
             <AuthenticatedComponent>
               <Route path="/user-profile" component={PersonalProfile} />
               <Route path="/friends-list" component={FriendsList} />
-              <Route path="/notifications" component={Notifications} />
+              <NotificationStore>
+                <Route path="/notifications" component={Notifications} />
+              </NotificationStore>
               <Route path="/user-settings" component={Settings} />
               <ChatStore>
                 <Route path="/chat" component={Chat} />

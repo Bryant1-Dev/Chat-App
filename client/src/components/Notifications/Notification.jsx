@@ -8,13 +8,13 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 
 const Notification = (props) => {
-    const {notification} = props;
+    const {notification, imageSource} = props;
     return (
         <ListItem>
             <ListItemAvatar>
-                <Avatar alt={`${notification.chatRoom} chat room notification`} src={notification.profileImage} />
+                <Avatar alt={`${notification.chat.name} chat room notification`} src={imageSource} />
             </ListItemAvatar>
-            <ListItemText primary={notification.chatRoom} secondary={notification.message} />
+            <ListItemText primary={notification.chat.name} secondary={notification.data.message} />
             <ListItemSecondaryAction>
                 <Button variant="outlined" color="primary" edge="end" aria-label="comments">
                     Dismiss

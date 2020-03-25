@@ -3,6 +3,7 @@ import { makeStyles, Paper, Typography, List,
     ListItem, ListItemText, Chip, Button, TextField } from '@material-ui/core';
 
 import ChatOptions from '../components/Chat/ChatOptions';
+import ChatTab from '../components/Chat/ChatTab/ChatTab';
 
 import {sendSocketData} from '../utils/socket';
 import {ChatContext} from '../stores/ChatStore';
@@ -80,18 +81,6 @@ const Chat = () => {
         }
         
     })
-    useEffect(() => {
-        
-            
-        /*socket.on('message', (data) => {
-            //console.log("runs")
-            console.log('socket on message: ' + JSON.stringify(data));
-            chatDispatch({type: 'RECIEVE_MESSAGE', payload : data})
-            setMessages([...messages, data])
-            
-        })*/
-        
-    }, [messages])
 
     useEffect(() => {
         if(textValue.length > 0 && sending) {
@@ -171,9 +160,7 @@ const Chat = () => {
                                 {
                                     topics.map(topic => {
                                         return (
-                                            <ListItem onClick={e => handleSwitchChat(e, topic)} key={topic} button>
-                                                <ListItemText primary={allChats[topic].name} />
-                                            </ListItem>
+                                            <ChatTab allChats={allChats} topic={topic} handleSwitchChat={handleSwitchChat} /> 
                                         )
                                     })
                                 }

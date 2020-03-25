@@ -18,12 +18,14 @@ const io = socketio(server);
 
 const users = require('./routes/users');
 const chats = require('./routes/chats');
+const notifications = require('./routes/notifications');
 
 const PORT = process.env.PORT || 8080;
 const PRODCUCTION = process.env.PRODCUCTION || 'development';
 const SECRET = process.env.SECRET || 'secret';
 
-const {addUser, removeUser, getUser, getUsersInRoom, retrieveUserChats, getUserInRoom} = require('./controllers/chat.controller');
+const {addUser, removeUser, getUser, getUsersInRoom, retrieveUserChats, 
+    getUserInRoom, saveSocketId, removeSocketId, handleChatInvite} = require('./controllers/chat.controller');
 
 require("./config/passport")(passport);
 
@@ -58,7 +60,14 @@ app.use(passport.session());
 
 //Socket logic
 io.on('connection', async (socket) => {
-    console.log("We have a new connection!!!")
+    console.log(`Server has a new socket connection: ${socket.id}`);
+
+    //Description on client login it saves the socket to the database
+    socket.on('notifyLogin', async (data, callback) => {
+        const {user, error} = await saveSocketId(data.id, socket.id);
+        if(error) return callback(error);
+        callback(null, user); //No errors
+    })
 
     socket.on('chat message', (data) => {
         console.log(JSON.stringify(data))
@@ -95,6 +104,7 @@ io.on('connection', async (socket) => {
         const {userId, chatId} = data;
         socket.join(chatId);
         //Can resend this specific roomData if need be
+        //removeSocketId(socket.id)
         callback();
     })
 
@@ -114,14 +124,43 @@ io.on('connection', async (socket) => {
         callback(); //No errors
     })
 
-    socket.on('disconnect', () => {
-        //const user = removeUser(socket.id);
+    socket.on('sendNotification', async (data, callback) => {
+        console.log(`From 'sendNotification' event: ${data}`);
+        //method that takes in a notification database object that takes action depending on if  
+        const {payload, error} = await handleChatInvite(data.notification);
+        if(error) return callback(error);
 
+        /*
+            Emit to individual socketid (private message)
+            Both the sender and recipient of the notification are sent data 
+            to display in their 'Notificaitons' page as well as their
+            notifications context store if they are logged on
+            Otherwise, they can get the data from the database when they login
+        */
+        const recipientPayload = {...payload};
+        recipientPayload.data.isRecipient = true;
+
+        const senderPayload = {...payload};
+        senderPayload.data.isRecipient = false;
+         
+        if(payload.recipient.isOnline) io.to(`${payload.recipient.socketId}`).emit('chat-invite-notification', recipientPayload); 
+        if(payload.sender.isOnline) io.to(`${payload.sender.socketId}`).emit('chat-invite-notification', senderPayload); 
+    })
+
+    socket.on('disconnect', async () => {
+
+        const {user, error} = await removeSocketId(socket.id);
+        if(error) {
+            console.log(error);
+            return;
+        }
+        
+        
         /*if(user) {
             io.to(user.room).emit('message', {user: 'admin', text: `${user.name} has left`})
             io.to(user.room).emit('roomData', {room: user.room, users: await getUsersInRoom(user.room)})
         }*/
-        console.log("A user has left (disconnected)")
+        console.log(`${user.username} has left (disconnected)`);
     })
 })
 
@@ -129,5 +168,6 @@ io.on('connection', async (socket) => {
 app.use('', require('./routes/index'));
 app.use('/users', users);
 app.use('/chats', chats);
+app.use('/notifications', notifications);
 
 server.listen(PORT, () => console.log(`Server listening on port ${PORT}...`))

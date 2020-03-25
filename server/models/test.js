@@ -22,6 +22,13 @@ const User = db.define('users', {
         type: Sequelize.DataTypes.STRING,
         allowNull: false
     },
+    socketId: {
+        type: Sequelize.DataTypes.STRING
+    },
+    isOnline: {
+        type: Sequelize.DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     profileImage: {
         type: Sequelize.DataTypes.BLOB
     },
@@ -151,18 +158,40 @@ Chat.hasMany(Message, {
 });
 
 //Notifications 
-const Notification = db.define('notifications', {
+const Notification = db.define('notification', {
     id: {
       type: Sequelize.DataTypes.INTEGER,
       primaryKey: true,
       allowNull: false,
       autoIncrement: true
     },
+    senderId: {
+        type: Sequelize.DataTypes.INTEGER,
+        references: {
+        model: 'User', 
+        key: 'id'
+        }
+    },
+    recipientId: {
+        type: Sequelize.DataTypes.INTEGER,
+        references: {
+        model: 'User', 
+        key: 'id'
+        }
+    },
+    status: {
+        type: Sequelize.DataTypes.ENUM,
+        values: ['pending', 'denied', 'accepted'],
+        allowNull: false
+    },
     text: {
-        type: Sequelize.DataTypes.STRING,
+        type: Sequelize.DataTypes.STRING
+    },
+    type: {
+    	type: Sequelize.DataTypes.STRING,
         allowNull: false 
     },
-    chatName: {
+    chatId: {
         type: Sequelize.DataTypes.INTEGER,
         references: {
             model: Chat, 

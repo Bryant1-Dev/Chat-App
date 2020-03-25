@@ -7,6 +7,8 @@ import {makeStyles, TextField, Button} from '@material-ui/core';
 
 import '../../styles/entry.style.css';
 
+import {socket} from '../../utils/socket';
+
 const Login = (props) => {
     
     const {view} = props;
@@ -26,11 +28,22 @@ const Login = (props) => {
         axios.post('/users/login', data).then(response => {
             if(response.data.success) {
                 console.log(JSON.stringify(response.data.payload))
-                userDispatch({type: 'login', payload: response.data.payload.user});
+                socket.emit('notifyLogin', response.data.payload.user, (err, user) => {
+                    
+                    //This error will only come from the database malfunctioning during a query
+                    if(err) {
+                        console.log(`Error from socket login: ${err}`);
+                        userDispatch({type: 'login', payload: response.data.payload.user}); //user w/o socket id
+                        props.history.push('/chat'); //redirect to the chat dashboard
+                        return;
+                    } 
+                    
+                    userDispatch({type: 'login', payload: user}); //user with socketid
+                    props.history.push('/chat'); //redirect to the chat dashboard
+                });
+                
                 setEmail('');
                 setPassword('');
-                props.history.push('/chat');
-                //redirect to the chat dashboard
             }
              else {
                  console.error(response.error);
