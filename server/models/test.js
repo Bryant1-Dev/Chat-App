@@ -158,7 +158,7 @@ Chat.hasMany(Message, {
 });
 
 //Notifications 
-const Notification = db.define('notification', {
+const Notification = db.define('notifications', {
     id: {
       type: Sequelize.DataTypes.INTEGER,
       primaryKey: true,
@@ -201,11 +201,11 @@ const Notification = db.define('notification', {
 });
 
 Notification.belongsTo(User, {
-    foreignKey: 'userId'
+    foreignKey: 'id'
 });
 
 User.hasMany(Notification, {
-    foreignKey: 'notificationId'
+    foreignKey: 'id'
 });
 
 module.exports = {User, Notification, Chat, Message, ChatParticipant, FriendRequest};

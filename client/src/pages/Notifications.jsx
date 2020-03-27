@@ -120,8 +120,8 @@ const Notifications = () => {
                                     {
                                         notificationIds.map((id, index) => {
                                             //Until we properly implement BLOB data or set up a file API, we will use random images
-                                            return (<Notification imageSource={imageUrls[index % imageUrls.length]} notification={allNotifications[id]} />)
-                                        })
+                                            return (<Notification key={index} imageSource={imageUrls[index % imageUrls.length]} notification={allNotifications[id]} />)
+                                        }) 
                                     }
                                 </List>
                                 )

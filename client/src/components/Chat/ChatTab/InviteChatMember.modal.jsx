@@ -63,7 +63,7 @@ const InviteChatMemberModal = (props) => {
             errors.push({message: `You must have enter a user's name`})
         }
         //verify name is not one of the users already in the chat
-        const alreadyInChat = chat.participants.some(participant => participant.name().trim().toLowerCase === name.name().trim().toLowerCase()); 
+        const alreadyInChat = chat.participants.some(participant => participant.name.trim().toLowerCase === name.trim().toLowerCase()); 
         if(alreadyInChat) {
             //handle error
             errors.push({message: `That user is already a member of this chat`})
@@ -88,6 +88,7 @@ const InviteChatMemberModal = (props) => {
             }
 
             else {
+                console.log('Error in chat invitation: ' + JSON.stringify(response.data.error))
                 errors.push({message: response.data.error});
                 setErrorList(errors);
             }

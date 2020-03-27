@@ -14,17 +14,20 @@ exports.retrieveUserNotifications = async (req, res) => {
                 ]
             }
         });
-
+        /*console.log(`Existing notifications length: ${notifications.length}`)
+        notifications.map((n, i) => {
+            console.log(`Notification #${i}: ${JSON.stringify(n)}`)
+        })*/
         if(notifications.length == 0) return res.send({
             success: true,
             payload: {
                 notifications: {}
             }
         });
-
+        console.log(`\n Didn't initially return nothing \n`)
         const notificationData = {};
         
-        for (notifications of notification) {
+        for (const notification of notifications) {
             
             const sender = await User.findOne({where: {id: notification.senderId}});
             const recipient = await User.findOne({where: {id: notification.recipientId}});
@@ -32,7 +35,12 @@ exports.retrieveUserNotifications = async (req, res) => {
             const isRecipient = !isSender;
             
             if(notification.type.trim().toLowerCase() == 'chat-invite') {
-                if(notification.status.trim().toLowerCase() != 'pending' && isRecipient) {
+                /*
+                    Recipients who have denied or accepted a chat invite notification
+                    are no longer privy to view notification, though the sender is still sent the notification afterwards
+                    to know what action the recipient took (acceptance or rejection)
+                */
+                if((notification.status.trim().toLowerCase() === 'pending' || isSender)) {
                     
                     const chat = await Chat.findOne({where: {id: notification.chatId}}) 
             
@@ -65,13 +73,13 @@ exports.retrieveUserNotifications = async (req, res) => {
                         }
                 
                     }
-
                     notificationData[notification.id] = data;
                     continue;
                 }
                 
             }
         } //end of for-loop
+        console.log('Data after loop: ' + JSON.stringify(notificationData))
 
         return res.send({ 
             success: true, 

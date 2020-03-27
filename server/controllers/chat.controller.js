@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const {User, Notification, Chat, Message, ChatParticipant, FriendRequest} = require('../models/test.js');
 const users = []
 
@@ -252,13 +253,22 @@ exports.inviteUserToChatRoom = async (req, res) => {
         //ensure a user with recipientName exists
         const recipient = await User.findOne({where: {username: recipientName}});
         if(!recipient) return res.send({success: false, error: `There is no account by the name of ${recipientName}`});
-        
+        console.log(`\nChecking recipient from database: ${JSON.stringify(recipient)} \n`);
         //ensure the chat with that id exists
         const chat = await Chat.findOne({where: {id: chatId}});
+        console.log(`\nChecking chat from database: ${JSON.stringify(chat)} \n`);
         if(!chat) return res.send({success: false, error: `There is no chat room with id ${chatId}`});
-
+        
+        console.log(`\n Checking to see if a previous chat invitation notification already exists... \n`);
         //if there is a user, ensure there is not already a pending notification out before creating a new one
-        const previousInviteRequest = await Notification.findOne({where: {chatId: chatId, senderId: senderId, type: type}});
+        const previousInviteRequest = await Notification.findOne({
+            where: {
+                chatId: chatId, 
+                senderId: req.user.id, 
+                type: type
+            }
+        });
+        
         if(previousInviteRequest) return res.send({success: false, error: `There is already a pending invite request for ${recipientName}`});
 
 
@@ -285,6 +295,7 @@ exports.inviteUserToChatRoom = async (req, res) => {
     }
 
     catch(error) {
+        console.error(error);
         res.send({
             success: false,
             error: error
@@ -295,10 +306,12 @@ exports.inviteUserToChatRoom = async (req, res) => {
 exports.removeSocketId = async (socketId) => {
     try {
         const user = await User.findOne({where: {socketId: socketId}});
-        user.socketId = null;
-        user.isOnline = false;
-        await user.save();
-        return {user: user, error: null};
+        if(user) {
+            user.socketId = '';
+            user.isOnline = false;
+            await user.save();
+            return {user: user, error: null};
+        }
     }
 
     catch(error) {

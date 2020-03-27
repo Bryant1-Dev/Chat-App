@@ -65,10 +65,13 @@ const Chat = () => {
     const [activeTopic, setActiveTopic] = useState("")
     const [messages, setMessages] = useState([])
     const [sending, setSending] = useState(false);
+    const [loading, setLoading] = useState(true);
     //const [latestMessageTime, setlatestMessageTime] = useState(null);
     let latestMessageTime = null;
     useEffect(() => {
         //console.log('running')
+        console.log('activeTopic on update: ' + activeTopic);
+         console.log(JSON.stringify(allChats));
         const socketData = sendSocketData();
         //console.log(socketData);
         if (socketData) {
@@ -105,12 +108,21 @@ const Chat = () => {
                 if(response.data.success) {
                     //dispatch the payload to the chat store
                     const {chats} = response.data.payload; 
+                    //console.log("Hello: " + JSON.stringify(Object.keys(chats).length === 0));
+
                     chatDispatch({type: 'LOAD_CHATS', payload: chats});
                     console.log("Hello: " + JSON.stringify(chats));
-                    setActiveTopic(Object.keys(chats)[0]);
-                    console.log('inital chats: ' + chats[Object.keys(chats)[0]].messages.length)
-                    setMessages(chats[Object.keys(chats)[0]].messages)
+
+                    //chats not empty {}, else keep defaults
+                    if(Object.keys(chats).length !== 0) {
+                        console.log('inital chats: ' + chats[Object.keys(chats)[0]].messages.length)
+                        setActiveTopic(Object.keys(chats)[0]);
+                        setMessages(chats[Object.keys(chats)[0]].messages)    
+                    }
+                    
+                    
                 }
+                setLoading(false);
             })
         }
         
@@ -150,7 +162,96 @@ const Chat = () => {
 
     return (
         <>
-        {(allChats && activeTopic) ? (
+        
+        {
+            loading && (
+                (
+                    <div>
+                        Loading...
+                    </div>
+                )
+            )
+        }
+
+        {
+            !loading && (
+                <>
+                    {
+                        (allChats && Object.keys(allChats).length !== 0) ? (
+                            <div className={classes.container}>
+                                <Paper className={classes.root}>
+                                    <ChatOptions topicName={allChats[activeTopic].name} />
+                                    <div className={classes.flex}>
+                                        <div className={classes.topicsWindow}>
+                                            <List>
+                                                {
+                                                    topics.map(topic => {
+                                                        return (
+                                                            <ChatTab allChats={allChats} topic={topic} handleSwitchChat={handleSwitchChat} /> 
+                                                        )
+                                                    })
+                                                }
+                                            </List>
+                                        </div>
+                                        <div className={classes.chatWindow}>
+                                        {
+                                                    allChats[activeTopic].messages.map((messageContent, index) => {
+                                                        return (
+                                                            <div className={classes.flex} key={index}> 
+                                                                <Chip label={messageContent.from} className={classes.chip} />
+                                                                <Typography component="p">
+                                                                    {messageContent.message}
+                                                                </Typography>
+                                                            </div>
+                                                        )
+                                                    })
+                                        }
+                                        </div>
+                                    </div>
+                                    <div className={classes.flex}>
+                                        <TextField
+                                                className={classes.chatBox}
+                                                label={"Send a chat"}
+                                                onChange={e => setTextValue(e.target.value)}
+                                                value={textValue}
+                                        />
+                                        <Button 
+                                                onClick={() => {
+                                                    setSending(true)
+                                                }}
+                                                className={classes.button}
+                                                variant="contained" 
+                                                color="primary"
+                                            >
+                                            Send
+                                        </Button>
+                                    </div>           
+                                        
+                                </Paper>  
+                        </div>
+                        )
+                        :
+                        (
+                            <div className={classes.container}>
+                                <Paper className={classes.root}>
+                                    <ChatOptions topicName={'You are not a part of any chat rooms'} />
+                                        <div className={classes.flex}>
+                                            <div className={classes.topicsWindow}>
+                                            </div>
+                                            <div className={classes.chatWindow}>
+                                            </div>
+                                        </div>
+                                        <div className={classes.flex}>
+                                        </div>  
+                                </Paper>  
+                        </div>
+                        )
+                    }
+                </>
+            )
+        }
+        
+        {/*(allChats && activeTopic) ? (
             <div className={classes.container}>
                 <Paper className={classes.root}>
                     <ChatOptions topicName={allChats[activeTopic].name} />
@@ -178,7 +279,7 @@ const Chat = () => {
                                             </div>
                                         )
                                     })
-                                }
+                        }
                         </div>
                     </div>
                     <div className={classes.flex}>
@@ -207,7 +308,7 @@ const Chat = () => {
                 <div>
                     Loading...
                 </div>
-            )}
+            )*/}
         </>
     )
 }
