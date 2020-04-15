@@ -54,7 +54,7 @@ Inviting a user to your chat room (In progress, users can send invitations, but 
 ![Image of inviting a user to your chat room](https://github.com/Bryant1-Dev/Chat-App/blob/master/screenshots/chat_add_user.PNG)
 
 Notifications Screen
-![Image of notifications screen](https://github.com/Bryant1-Dev/Chat-App/blob/master/screenshots/chat.PNG)
+![Image of notifications screen](https://github.com/Bryant1-Dev/Chat-App/blob/master/screenshots/notifications.PNG)
 
 Friends List Screen (In progress, default values)
 ![Image of freinds list screen](https://github.com/Bryant1-Dev/Chat-App/blob/master/screenshots/friends_list.PNG)
