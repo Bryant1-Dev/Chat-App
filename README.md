@@ -37,7 +37,10 @@ npm install
 * [PostgreSQL](https://www.postgresql.org/docs/12/index.html) - The ORDMS (Object Relational Database Management System)
 * [Sequelize](https://sequelize.org/v5/) - The ORM (Object Relational Mapping)
 
+#Screenshots
 
+Login Screen
+![Image of Login side by side](https://github.com/Bryant1-Dev/Chat-App/blob/master/screenshots/login_side_by_side.PNG)
 ## Authors
 
 * **Bryant Wilkins** - [Bryant1-Dev](https://github.com/Bryant1-Dev)
