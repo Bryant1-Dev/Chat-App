@@ -41,6 +41,29 @@ npm install
 
 Login Screen
 ![Image of Login side by side](https://github.com/Bryant1-Dev/Chat-App/blob/master/screenshots/login_side_by_side.PNG)
+
+![Image of stacked Login](https://github.com/Bryant1-Dev/Chat-App/blob/master/screenshots/login_stacked.PNG)
+
+Chat screen
+![Image of Chat screen](https://github.com/Bryant1-Dev/Chat-App/blob/master/screenshots/chat_screen.PNG)
+
+Creating a new Chat Room
+![Image of creating a new chat room](https://github.com/Bryant1-Dev/Chat-App/blob/master/screenshots/chat_add_new_chat.PNG)
+
+Inviting a user to your chat room (In progress, users can send invitations, but not yet accept or decline)
+![Image of inviting a user to your chat room](https://github.com/Bryant1-Dev/Chat-App/blob/master/screenshots/chat_add_user.PNG)
+
+Notifications Screen
+![Image of notifications screen](https://github.com/Bryant1-Dev/Chat-App/blob/master/screenshots/chat.PNG)
+
+Friends List Screen (In progress, default values)
+![Image of freinds list screen](https://github.com/Bryant1-Dev/Chat-App/blob/master/screenshots/friends_list.PNG)
+
+Pending Friends Requests Screen (In-progress, default values)
+![Image of pending friend requests screen](https://github.com/Bryant1-Dev/Chat-App/blob/master/screenshots/friends_list_pending.PNG)
+
+Application Settings Screen (In-progress, default values)
+![Image of applicaiton settings screen](https://github.com/Bryant1-Dev/Chat-App/blob/master/screenshots/settings.PNG)
 ## Authors
 
 * **Bryant Wilkins** - [Bryant1-Dev](https://github.com/Bryant1-Dev)
